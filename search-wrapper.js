@@ -53,27 +53,109 @@
     'this','that','your','you','from','or','are','can','will','into','an','any'
   ]);
 
-  // ---------- dictionary ----------
+  const GENERIC_TRANSCRIPT = new Set([
+    'click','button','here','simply','now','first','also','see','using','used',
+    'make','need','want','then','just','like','into','than','each','more'
+  ]);
+
+  const TIER = {
+    title: 1,
+    keyword: 2,
+    description: 3,
+    category: 4,
+    transcript: 5
+  };
+
+  const ALIAS_GROUPS = [
+    ['quiz', 'mcq', 'multiple choice', 'multiple-choice'],
+    ['objective', 'objectives', 'learning objective', 'learning objectives'],
+    ['login', 'log in', 'logging in'],
+    ['ta', 'tas', 'teaching assistant']
+  ];
+
+  function conservativeStem(word) {
+    const w = normalize(word);
+    if (w.length < 3) return w;
+    if (w.endsWith('ies') && w.length > 5) return w.slice(0, -3) + 'y';
+    if (w.endsWith('ing') && w.length >= 9) return w.slice(0, -3);
+    if (w.endsWith('ed') && w.length > 6) return w.slice(0, -2);
+    if (w.endsWith('s') && !w.endsWith('ss') && !w.endsWith('us') && w.length > 4) {
+      return w.slice(0, -1);
+    }
+    return w;
+  }
+
+  function stemForms(word) {
+    const n = normalize(word);
+    const s = conservativeStem(n);
+    const forms = new Set([n, s]);
+    if (s.length >= 3 && !s.endsWith('e')) forms.add(s + 'e');
+    return forms;
+  }
+
+  function tokensRelated(a, b) {
+    const A = stemForms(a);
+    const B = stemForms(b);
+    for (const x of A) if (B.has(x)) return true;
+    return false;
+  }
+
+  function expandQuery(query) {
+    const tokens = tokenize(query);
+    const phrase = normalize(query);
+    const expanded = new Set(tokens);
+    const extraPhrases = new Set();
+    for (const group of ALIAS_GROUPS) {
+      const hit = group.some((alias) => {
+        const na = normalize(alias);
+        const aliasToks = tokenize(alias);
+        if (phrase === na) return true;
+        if (aliasToks.length === 1) {
+          return tokens.some((qt) => tokensRelated(qt, aliasToks[0]));
+        }
+        return aliasToks.every((at) => tokens.some((qt) => tokensRelated(qt, at)));
+      });
+      if (!hit) continue;
+      for (const alias of group) {
+        const aliasToks = tokenize(alias);
+        if (aliasToks.length === 1) expanded.add(aliasToks[0]);
+        else extraPhrases.add(normalize(alias));
+      }
+    }
+    const matchTokens = [...expanded].filter((t) => t.length >= 2 && !STOP.has(t));
+    return { tokens, expanded: [...expanded], matchTokens, extraPhrases: [...extraPhrases], phrase };
+  }
+
+  function matchedTokensInText(text, qTokens) {
+    const ftoks = tokenize(text || '');
+    return qTokens.filter((qt) => ftoks.some((ft) => tokensRelated(qt, ft)));
+  }
+
+  function containsPhrase(text, phrase) {
+    if (!phrase) return false;
+    return normalize(text || '').includes(phrase);
+  }
+
+  // ---------- dictionary (titles, keywords, descriptions — not transcript) ----------
   function buildDictionary(index){
     const counts = new Map();
-    const bump = (w) => counts.set(w, (counts.get(w) || 0) + 1);
+    const bump = (w) => {
+      const n = normalize(w);
+      if (n.length >= 3 && !STOP.has(n)) counts.set(n, (counts.get(n) || 0) + 1);
+    };
 
     for (const item of index || []) {
-      for (const w of tokenize(item.title || '')) if (w.length >= 3) bump(w);
-      const words = tokenize((item.transcript || '').slice(0, 2000));
-      let seen = 0;
-      for (const w of words) {
-        if (seen++ > 200) break;
-        if (w.length >= 4 && !STOP.has(w)) bump(w);
-      }
+      for (const w of tokenize(item.title || '')) bump(w);
+      for (const w of tokenize(item.description || '')) bump(w);
       if (Array.isArray(item.keywords)) {
         for (const kw of item.keywords) {
-          const w = normalize(kw);
-          if (w.length >= 3) bump(w);
+          bump(kw);
+          for (const w of tokenize(kw)) bump(w);
         }
       }
     }
-    for (const s of SUGGESTIONS) for (const w of tokenize(s)) if (w.length >= 3) bump(w);
+    for (const s of SUGGESTIONS) for (const w of tokenize(s)) bump(w);
+    for (const group of ALIAS_GROUPS) for (const a of group) for (const w of tokenize(a)) bump(w);
     return counts;
   }
 
@@ -147,7 +229,6 @@
 
     const ranked = rankSuggestions(Array.from(suggestions), dict, lookups);
 
-    // Only keep those that actually have transcript hits
     const valid = [];
     for (const s of ranked) {
       const res = rankedSearch(s, index);
@@ -176,94 +257,143 @@
     return highlight(withQuotes, words);
   }
 
-  // ---------- relevance scoring ----------
-  function computeScore(item, qTokens) {
-    const title = normalize(item.title || '');
-    const body  = normalize(item.transcript || '');
-    const kws   = Array.isArray(item.keywords) ? item.keywords.map(normalize) : [];
+  function analyzeItem(item, q) {
+    const title = (item.title || '').toString();
+    const description = (item.description || '').toString();
+    const category = (item.category || '').toString();
+    const section = (item.section || '').toString();
+    const transcript = (item.transcript || '').toString();
+    const keywords = Array.isArray(item.keywords) ? item.keywords : [];
+    const keywordText = keywords.join(' ');
+    const catSecText = `${category} ${section}`;
+    const matchTokens = q.matchTokens || q.expanded;
+    const phrases = [q.phrase, ...(q.extraPhrases || [])].filter(Boolean);
+
+    const titleHits = matchedTokensInText(title, matchTokens);
+    const descHits = matchedTokensInText(description, matchTokens);
+    const catHits = matchedTokensInText(catSecText, matchTokens);
+    const transHits = matchedTokensInText(transcript, matchTokens);
+
+    const kwMatched = new Set();
+    let keywordPhrase = false;
+    for (const kw of keywords) {
+      const nk = normalize(kw);
+      if (!nk) continue;
+      if (phrases.some((p) => nk === p || (p.length >= 4 && (nk === p || containsPhrase(kw, p))))) {
+        keywordPhrase = true;
+      }
+      for (const qt of matchTokens) {
+        if (tokensRelated(qt, nk) || tokenize(kw).some((kt) => tokensRelated(qt, kt))) {
+          kwMatched.add(qt);
+        }
+      }
+    }
+
+    const titlePhrase = phrases.some((p) => p.length >= 3 && containsPhrase(title, p));
+    const descPhrase = phrases.some((p) => p.length >= 3 && containsPhrase(description, p));
+    const transPhrase = containsPhrase(transcript, q.phrase);
+
+    const fields = [];
+    if (titlePhrase || titleHits.length) fields.push('title');
+    if (keywordPhrase || kwMatched.size) fields.push('keywords');
+    if (descPhrase || descHits.length) fields.push('description');
+    if (catHits.length) fields.push('category/section');
+    if (transHits.length || transPhrase) fields.push('transcript');
+
+    let tier = 99;
+    if (titlePhrase || titleHits.length) tier = TIER.title;
+    else if (keywordPhrase || kwMatched.size) tier = TIER.keyword;
+    else if (descPhrase || descHits.length) tier = TIER.description;
+    else if (catHits.length) tier = TIER.category;
+    else if (transHits.length || transPhrase) tier = TIER.transcript;
 
     const W = {
       exactTitle: 120,
       startsTitle: 70,
-      containsTitle: 45,
-      exactPhraseBody: 28,
-      keywordHit: 22,
-      tokenInTitle: 11,
-      tokenInBody: 5,
-      orderBonus: 7,
-      earlyPosBonus: 5,
-      sameSection: 12,
-      recencyBonus: 6
+      containsTitle: 50,
+      tokenInTitle: 18,
+      keywordPhrase: 40,
+      tokenInKeyword: 16,
+      phraseDesc: 22,
+      tokenInDesc: 10,
+      tokenInCatSec: 8,
+      phraseTranscript: 4,
+      tokenInTranscript: 2,
+      sameSection: 6
     };
 
-    const query = qTokens.join(' ');
     let score = 0;
-
-    if (title === query) score += W.exactTitle;
-    if (title.startsWith(query)) score += W.startsTitle;
-    if (title.includes(query)) score += W.containsTitle;
-    if (body.includes(query)) score += W.exactPhraseBody;
-
-    for (const kw of kws) {
-      if (!kw) continue;
-      if (kw === query) score += W.keywordHit + 5;
-      else if (kw.includes(query) || query.includes(kw)) score += W.keywordHit;
-      for (const t of qTokens) if (kw === t) score += 6;
-    }
-
-    const titleTokens = new Set(tokenize(item.title || ''));
-    const bodyLower = body;
-    let lastIdx = -1;
-    for (const t of qTokens) {
-      if (titleTokens.has(t)) score += W.tokenInTitle;
-      const idx = bodyLower.indexOf(t);
-      if (idx >= 0) {
-        score += W.tokenInBody;
-        if (lastIdx >= 0 && idx > lastIdx) score += W.orderBonus;
-        if (idx < 80) score += W.earlyPosBonus;
-        lastIdx = idx;
-      }
-    }
+    const nTitle = normalize(title);
+    if (nTitle === q.phrase) score += W.exactTitle;
+    if (nTitle.startsWith(q.phrase)) score += W.startsTitle;
+    if (titlePhrase) score += W.containsTitle;
+    score += titleHits.length * W.tokenInTitle;
+    if (keywordPhrase) score += W.keywordPhrase;
+    score += kwMatched.size * W.tokenInKeyword;
+    if (descPhrase) score += W.phraseDesc;
+    score += descHits.length * W.tokenInDesc;
+    score += catHits.length * W.tokenInCatSec;
+    if (transPhrase) score += W.phraseTranscript;
+    score += transHits.length * W.tokenInTranscript;
 
     const activeSection = window.ACTIVE_SECTION && normalize(window.ACTIVE_SECTION);
-    if (activeSection && normalize(item.section || '') === activeSection) {
-      score += W.sameSection;
+    if (activeSection && normalize(section) === activeSection) score += W.sameSection;
+
+    const meaningful = q.tokens.filter((t) => t.length >= 3 && !STOP.has(t));
+    const transOnly = tier === TIER.transcript;
+    const weakTranscriptToken = meaningful.length === 1
+      && (meaningful[0].length < 5 || GENERIC_TRANSCRIPT.has(meaningful[0]));
+
+    let eligible = false;
+    if (titlePhrase || titleHits.length || keywordPhrase || kwMatched.size) eligible = true;
+    else if (descPhrase || descHits.length) eligible = true;
+    else if (catHits.length && meaningful.length <= 2) eligible = true;
+    else if (transOnly && meaningful.length && transHits.length >= meaningful.length && !weakTranscriptToken) {
+      eligible = true;
     }
 
-    return score;
+    const origMeaningful = q.tokens.filter((t) => t.length >= 3 && !STOP.has(t));
+    const origHits = new Set();
+    for (const text of [title, keywordText, description, catSecText, transcript]) {
+      for (const t of matchedTokensInText(text, origMeaningful)) origHits.add(t);
+    }
+    const WEAK_ALONE = new Set(['multiple', 'add', 'new', 'page', 'set', 'use', 'open', 'content']);
+    const origDistinct = [...origHits].filter((t) => !WEAK_ALONE.has(normalize(t)));
+    if (eligible && origMeaningful.length >= 2 && origDistinct.length === 0 && !titlePhrase && !descPhrase) {
+      eligible = false;
+    }
+
+    let snippetSource = title;
+    if (descPhrase || descHits.length) snippetSource = description;
+    else if (titlePhrase || titleHits.length) snippetSource = title;
+    else if (keywordPhrase || kwMatched.size) snippetSource = keywordText || title;
+    else if (transcript) snippetSource = transcript;
+
+    return { eligible, tier, score, fields, snippetSource };
   }
 
-  // ---------- ranked search ----------
   function rankedSearch(query, index){
-    const qTokens = tokenize(query);
-    if (!qTokens.length) return [];
+    const q = expandQuery(query);
+    if (!q.tokens.length) return [];
 
     const scored = [];
     for (const item of index || []) {
-      const title = (item.title || '').toString();
-      const body  = (item.transcript || '').toString();
+      const analysis = analyzeItem(item, q);
+      if (!analysis.eligible || analysis.score <= 0) continue;
 
-      const tl = title.toLowerCase();
-      const bl = body.toLowerCase();
-
-      const combo = tl + ' ' + bl;
-      const hit = qTokens.every(w => combo.includes(w));
-      if (!hit) continue;
-
-      const score = computeScore(item, qTokens);
-      if (score <= 0) continue;
-
-      const snippetSource = qTokens.some(w => bl.includes(w)) ? body : title;
-
+      const highlightWords = [...new Set([...q.tokens, ...q.expanded])];
       scored.push({
         item,
-        score,
-        layer: title || 'Untitled',
-        snippetHtml: makeSnippet(snippetSource, qTokens)
+        score: analysis.score,
+        tier: analysis.tier,
+        fields: analysis.fields,
+        layer: (item.title || 'Untitled'),
+        snippetHtml: makeSnippet(analysis.snippetSource, highlightWords)
       });
     }
 
-    scored.sort((a,b) => (b.score - a.score)
+    scored.sort((a, b) => (a.tier - b.tier)
+      || (b.score - a.score)
       || (a.layer.length - b.layer.length)
       || a.layer.localeCompare(b.layer));
     return scored;
@@ -435,4 +565,6 @@ run.flush();
 
     setTimeout(() => input?.focus(), 0);
   };
+
+  window.__tutorialSearch = { rankedSearch, suggestCorrectionsForQuery, buildDictionary, buildLookups };
 })();
