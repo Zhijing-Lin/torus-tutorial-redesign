@@ -239,22 +239,29 @@
   }
 
   function makeSnippet(source, words){
+    if (!source) return '';
     const lower = source.toLowerCase();
     let bestIdx = Infinity;
     for (const w of words) {
       const i = lower.indexOf(w);
       if (i !== -1 && i < bestIdx) bestIdx = i;
     }
-    const sentences = source.match(/[^.!?]*[.!?]/g) || [source];
-    let sentence = sentences.find(s => words.every(w => s.toLowerCase().includes(w)));
-    if (!sentence) {
-      const base = isFinite(bestIdx) ? bestIdx : 0;
-      const start = Math.max(0, base - 90);
-      const end   = Math.min(source.length, base + 90);
-      sentence = (start>0 ? '…' : '') + source.slice(start, end) + (end<source.length ? '…' : '');
+    const base = isFinite(bestIdx) ? bestIdx : 0;
+    let start = Math.max(0, base - 48);
+    let end   = Math.min(source.length, base + 72);
+    if (start > 0) {
+      const prevSpace = source.lastIndexOf(' ', start);
+      if (prevSpace !== -1) start = prevSpace + 1;
     }
-    const withQuotes = /[“”"]/.test(sentence) ? sentence.trim() : `“${sentence.trim()}”`;
-    return highlight(withQuotes, words);
+    if (end < source.length) {
+      const prevSpace = source.lastIndexOf(' ', end);
+      if (prevSpace > start + 20) end = prevSpace;
+    }
+    let excerpt = source.slice(start, end).replace(/\s+/g, ' ').trim();
+    if (start > 0) excerpt = '…' + excerpt;
+    if (end < source.length) excerpt = excerpt + '…';
+    if (excerpt.length > 140) excerpt = excerpt.slice(0, 137).replace(/\s+\S*$/, '') + '…';
+    return highlight(excerpt, words);
   }
 
   function analyzeItem(item, q) {
@@ -363,11 +370,8 @@
       eligible = false;
     }
 
-    let snippetSource = title;
-    if (descPhrase || descHits.length) snippetSource = description;
-    else if (titlePhrase || titleHits.length) snippetSource = title;
-    else if (keywordPhrase || kwMatched.size) snippetSource = keywordText || title;
-    else if (transcript) snippetSource = transcript;
+    let snippetSource = '';
+    if (transHits.length || transPhrase) snippetSource = transcript;
 
     return { eligible, tier, score, fields, snippetSource };
   }
@@ -388,7 +392,9 @@
         tier: analysis.tier,
         fields: analysis.fields,
         layer: (item.title || 'Untitled'),
-        snippetHtml: makeSnippet(analysis.snippetSource, highlightWords)
+        snippetHtml: analysis.snippetSource
+          ? makeSnippet(analysis.snippetSource, highlightWords)
+          : ''
       });
     }
 
@@ -399,20 +405,58 @@
     return scored;
   }
 
+  function plainSnippetText(html){
+    return String(html || '')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"').replace(/&#039;/g, "'")
+      .replace(/[…]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
   function renderBatch(resultsEl, items, start, count, navigate){
     const tpl = resultsEl.closest('#searchModal')?.querySelector('#sw-result-template');
     const end = Math.min(items.length, start + count);
     for (let i = start; i < end; i++) {
-      const { layer, snippetHtml } = items[i];
-      if (tpl) {
-        const node = tpl.content.cloneNode(true);
-        node.querySelector('.sw-layer').textContent = layer;
-        node.querySelector('.sw-quote').innerHTML = snippetHtml;
-        node.querySelector('.sw-btn').addEventListener('click', (e) => {
-          e.preventDefault(); navigate?.(layer);
-        });
-        resultsEl.appendChild(node);
+      const { layer, snippetHtml, item } = items[i];
+      if (!tpl) continue;
+      const rec = item || {};
+      const node = tpl.content.cloneNode(true);
+      const titleEl = node.querySelector('.sw-result-title');
+      const pathEl  = node.querySelector('.sw-result-path');
+      const descEl  = node.querySelector('.sw-result-desc');
+      const matchEl = node.querySelector('.sw-result-match');
+
+      if (titleEl) titleEl.textContent = rec.title || layer || 'Untitled';
+
+      const cat = (rec.category || '').trim();
+      const section = (rec.section || '').trim();
+      if (pathEl) {
+        if (cat || section) pathEl.textContent = [cat, section].filter(Boolean).join(' → ');
+        else pathEl.hidden = true;
       }
+
+      if (descEl) {
+        if (rec.description) descEl.textContent = rec.description;
+        else descEl.hidden = true;
+      }
+
+      if (matchEl) {
+        const descPlain = normalize(rec.description || '');
+        const snipPlain = normalize(plainSnippetText(snippetHtml));
+        const useful = snippetHtml
+          && snipPlain
+          && snipPlain !== descPlain
+          && !descPlain.includes(snipPlain);
+        if (useful) matchEl.innerHTML = snippetHtml;
+        else matchEl.hidden = true;
+      }
+
+      node.querySelector('.sw-btn')?.addEventListener('click', (e) => {
+        e.preventDefault(); navigate?.(layer);
+      });
+      resultsEl.appendChild(node);
     }
     return end;
   }

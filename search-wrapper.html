@@ -42,14 +42,52 @@
 
   /* Results */
   #searchModal .sw-results{ margin-top:6px; }
-  #searchModal .sw-block{ padding:14px 2px 6px; }
-  #searchModal .sw-sep{ border:0; border-top:1px solid var(--border); margin:14px 0; }
+  #searchModal .sw-block{ padding:16px 2px 8px; }
+  #searchModal .sw-sep{ border:0; border-top:1px solid var(--border); margin:12px 0 4px; }
 
   #searchModal .sw-found{ color:var(--ink); font-size:18px; margin:0 0 6px; }
-  #searchModal .sw-layer{ font-weight:800; }
 
-  #searchModal .sw-quote{ margin:0 0 12px; color:var(--ink); font-size:20px; line-height:1.35; }
+  #searchModal .sw-result-title{
+    margin:0 0 6px;
+    font-size:22px;
+    line-height:1.25;
+    font-weight:800;
+    color:var(--ink);
+    overflow-wrap:anywhere;
+  }
+  #searchModal .sw-result-path{
+    margin:0 0 8px;
+    font-size:12px;
+    line-height:1.35;
+    font-weight:600;
+    letter-spacing:.04em;
+    color:#6b7280;
+    text-transform:uppercase;
+  }
+  #searchModal .sw-result-desc{
+    margin:0 0 8px;
+    font-size:15px;
+    line-height:1.45;
+    font-weight:400;
+    color:#374151;
+  }
+  #searchModal .sw-result-match{
+    margin:0 0 10px;
+    font-size:14px;
+    line-height:1.4;
+    color:#5b6475;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
   #searchModal mark{ background:transparent; color:var(--blue); font-weight:800; padding:0; }
+
+  @media (max-width: 560px){
+    #searchModal .sw-result-title{ font-size:18px; }
+    #searchModal .sw-result-desc{ font-size:14px; }
+    #searchModal .sw-btn{ font-size:16px; }
+  }
 
   /* Outline pill button */
   #searchModal .sw-actions{ margin:8px 0 4px; }
@@ -97,8 +135,10 @@
   <!-- Hidden template for one result block -->
   <template id="sw-result-template">
     <div class="sw-block">
-      <p class="sw-found">Found in: <span class="sw-layer"></span></p>
-      <p class="sw-quote"></p>
+      <h3 class="sw-result-title"></h3>
+      <p class="sw-result-path"></p>
+      <p class="sw-result-desc"></p>
+      <p class="sw-result-match"></p>
       <div class="sw-actions">
         <a class="sw-btn" href="#" role="button">
           Go to Tutorial
