@@ -48,9 +48,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // 4) Navigate handler: DO NOT change window.location.
       //    Emit an event the host UI can handle to open the section in-place.
-      const navigate = (layer /* title only, url ignored */) => {
+      const navigate = (payload) => {
+        const title = typeof payload === 'string'
+          ? payload
+          : (payload && payload.title) || '';
+        const page = typeof payload === 'string'
+          ? ''
+          : (payload && payload.page) || '';
         window.dispatchEvent(new CustomEvent('search:openTutorial', {
-          detail: { title: layer }
+          detail: { title, page }
         }));
         close();
       };

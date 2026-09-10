@@ -108,6 +108,12 @@ document.addEventListener('click', function (event) {
     'Project Labels': 'Project Labels',
   };
 
+  function findMenuItemByPage(page) {
+    if (!page) return null;
+    const esc = (v) => (window.CSS && CSS.escape) ? CSS.escape(v) : v;
+    return document.querySelector(`.submenu li[data-page="${esc(page)}"]`);
+  }
+
   function findMenuItemByTitleSmart(title) {
     const wanted = TITLE_ALIASES[title] || title || '';
     const esc = (v) => (window.CSS && CSS.escape) ? CSS.escape(v) : v;
@@ -262,10 +268,11 @@ document.addEventListener('click', function (event) {
     sidebar?.classList.remove('collapsed');
 
     const title = (e.detail && (e.detail.title || e.detail.layer)) || '';
-    if (!title) return;
+    const page = (e.detail && e.detail.page) || '';
+    if (!title && !page) return;
 
-    const li = findMenuItemByTitleSmart(title);
-    if (!li) return console.warn('No menu match for:', title);
+    const li = findMenuItemByPage(page) || findMenuItemByTitleSmart(title);
+    if (!li) return console.warn('No menu match for:', page || title);
 
     const submenu = li.closest('.submenu');
     if (submenu && submenu.classList.contains('collapsed')) {

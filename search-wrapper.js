@@ -454,7 +454,8 @@
       }
 
       node.querySelector('.sw-btn')?.addEventListener('click', (e) => {
-        e.preventDefault(); navigate?.(layer);
+        e.preventDefault();
+        navigate?.({ title: rec.title || layer, page: rec.page || '' });
       });
       resultsEl.appendChild(node);
     }
@@ -596,7 +597,13 @@
 
 
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); if (ranked && ranked.length) navigate?.(ranked[0].layer); }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (ranked && ranked.length) {
+          const first = ranked[0];
+          navigate?.({ title: first.layer, page: first.item?.page || '' });
+        }
+      }
     });
     closeBtn?.addEventListener('click', () => close?.());
 
