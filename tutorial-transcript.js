@@ -188,18 +188,18 @@ window.TUTORIAL_INDEX = [
     category: "Author",
     section: "Develop Your Course",
     page: "pages/develop-your-course/paragraph-toolbar.html",
-    description: "Learn how to use the paragraph toolbar while editing a paragraph.",
-    keywords: ["toolbar", "formatting", "format text", "rich text", "paragraph"],
-    transcript: ""
+    description: "Learn how to format text with the paragraph toolbar, including lists, headings, and undo/redo.",
+    keywords: ["toolbar", "formatting", "format text", "rich text", "paragraph", "underline", "strikethrough", "subscript", "superscript", "heading", "list", "block quote", "undo", "redo"],
+    transcript: "For more text formatting options, click the three dots more icons in the toolbar. You can underline and strikethrough text and make subscripts and superscripts. Remember to avoid overusing underlined text, as it can be confused with links. To create lists, headings, and block quotes, click the format dropdown and select your desired format. The list and heading formats open additional toolbar options when selected. Use a list format for bulleted or numbered items. You can use these to additionally adjust your list and headings. For accessibility, remember to use a heading format for section headers and avoid using simply bold or italicized text. At the end of paragraph toolbar are the undo and redo buttons, which allow you to undo and redo changes that you make within this paragraph block."
   },
   {
     title: "Paragraph Toolbar: Insert",
     category: "Author",
     section: "Develop Your Course",
     page: "pages/develop-your-course/paragraph-toolbar-insert.html",
-    description: "Learn how to insert items from the paragraph toolbar.",
-    keywords: ["insert", "toolbar", "paragraph", "insert menu", "media"],
-    transcript: ""
+    description: "Learn how to insert tables, images, and YouTube videos from the paragraph toolbar.",
+    keywords: ["insert", "toolbar", "paragraph", "insert menu", "media", "table", "image", "YouTube", "caption", "alternative text", "alt text", "accessibility"],
+    transcript: "From the paragraph toolbar, you can also insert further types of content, such as tables, images, and YouTube videos. To insert a table, click Insert Table. This creates an empty table with a two-by-two default size. Clicking any cell of the table brings up a three vertical dots menu button in that cell. Click the button to bring up the table editing menu. From the table menu, you can add and delete rows and columns, format a table, delete the table, and so on. But you cannot copy-paste tables from other resources. For accessibility, remember to use the toggle header option for any row or column headers in your table so that they can be read correctly by a screen reader. If your table needs a caption, you can enter one by clicking Caption (Optional) below your table. To insert an image, in the paragraph toolbar, click Insert Image. An image placeholder will appear. Click the Choose Image button to select, upload, or indicate the image you want to insert. If you select the wrong image or want to change the image later, click Select Image in the image toolbar to return to the Select Image overlay. You can only add images from the image upload menu. To upload other types of media, go to the audio or video upload menus. Click Settings in the image toolbar to bring up the image setting overlays. Here, you can optionally adjust the size of your image. You can also enter alternative text for your image. For accessibility, remember to add a meaningful image description in the alternative text for all non-purely decorative images. As with tables, if your image needs a caption, you can enter one by clicking Caption (Optional) below your image. To insert other kinds of content, click the plus insert icon in the paragraph toolbar and select the kind of content you want to insert. For example, to insert a YouTube video, click YouTube and enter the video's URL in the overlay."
   },
   {
     title: "Insert Content",
@@ -215,9 +215,9 @@ window.TUTORIAL_INDEX = [
     category: "Author",
     section: "Develop Your Course",
     page: "pages/develop-your-course/add-mcq.html",
-    description: "Learn how to add multiple-choice questions.",
-    keywords: ["MCQ", "multiple choice", "quiz", "question", "assessment", "add question"],
-    transcript: ""
+    description: "Learn how to add a multiple-choice question, answer choices, shuffle, and the answer key.",
+    keywords: ["MCQ", "multiple choice", "quiz", "question", "assessment", "add question", "answer choices", "answer key", "shuffle", "question stem", "learning objective"],
+    transcript: "Multiple choice is a choice-based question type with single choice selection. To add a multiple choice question, click the Insert Content icon and select Multiple Choice Question. Make sure to edit the multiple choice title. This is for your reference and will be very important to the readability of our data analysis. Students will not see the question title. Remember to click Save after you finish your changes to the title. Adding learning objectives to your question follows the same process as adding learning objectives to a page. In accordance with learning engineering principles and to enable meaningful data analysis, all questions should have at least one associated learning objective or sub-objective. To begin authoring your question, in the question text box, enter the text of the question or question stem. This will be presented to students as a question they need to respond to. For example, let's enter, \"Which planet in the solar system is closest to the Sun?\" The same formatting and content inserting options available in the paragraph blocks are available for the question stem. Next, add the answer choices. These are the answer options your learners can select from. You can add as many choices as needed. Here, I will add three answer choices as an example. To add another answer choice, click Add Choice below the existing choices. To delete a particular answer choice, click the X's to the right of the answer choice. You have two options for the order in which students will see the answer choices. If answer choices are shuffled, students will see them in a randomly determined order. If answer choices are not shuffled, students will see them in the order they appear in authoring. To select your desired option, click the three dots menu on the far right above the question stem. Check or uncheck the Shuffle Answer Choices checkbox. To reorder the answer choices, click the drag handle to the left of an answer choice and drag it into the desired position. To set which answer choice will be marked as correct, go to the Answer Key tab. Simply select the radio button next to a correct answer."
   },
   {
     title: "Activity Bank",

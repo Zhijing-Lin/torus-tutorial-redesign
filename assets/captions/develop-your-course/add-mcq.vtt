@@ -1,0 +1,185 @@
+WEBVTT
+
+cue-1
+00:00:00.360 --> 00:00:04.580
+Multiple choice is a choice-based question
+type with single choice selection.
+
+cue-2
+00:00:05.200 --> 00:00:06.740
+To add a multiple choice question,
+
+cue-3
+00:00:07.520 --> 00:00:09.620
+click the Insert Content icon
+
+cue-4
+00:00:10.280 --> 00:00:12.220
+and select Multiple Choice Question.
+
+cue-5
+00:00:15.000 --> 00:00:17.600
+Make sure to edit the multiple choice
+title.
+
+cue-6
+00:00:20.760 --> 00:00:24.540
+This is for your reference and will be
+very important to the readability of our
+
+cue-7
+00:00:24.540 --> 00:00:25.400
+data analysis.
+
+cue-8
+00:00:26.140 --> 00:00:28.020
+Students will not see the question title.
+
+cue-9
+00:00:28.860 --> 00:00:32.400
+Remember to click Save after you finish
+your changes to the title.
+
+cue-10
+00:00:33.840 --> 00:00:37.700
+Adding learning objectives to your
+question follows the same process as
+
+cue-11
+00:00:37.700 --> 00:00:39.380
+adding learning objectives to a page.
+
+cue-12
+00:00:40.240 --> 00:00:44.880
+In accordance with learning engineering
+principles and to enable meaningful data
+
+cue-13
+00:00:44.880 --> 00:00:50.180
+analysis, all questions should have at
+least one associated learning objective or
+
+cue-14
+00:00:50.180 --> 00:00:51.320
+sub-objective.
+
+cue-15
+00:00:55.020 --> 00:00:59.940
+To begin authoring your question, in the
+question text box, enter the text of the
+
+cue-16
+00:00:59.940 --> 00:01:01.340
+question or question stem.
+
+cue-17
+00:01:02.100 --> 00:01:06.060
+This will be presented to students as a
+question they need to respond to.
+
+cue-18
+00:01:06.760 --> 00:01:12.720
+For example, let's enter, "Which planet in
+the solar system is closest to the Sun?"
+
+cue-19
+00:01:16.720 --> 00:01:21.640
+The same formatting and content inserting
+options available in the paragraph blocks
+
+cue-20
+00:01:21.640 --> 00:01:23.380
+are available for the question stem.
+
+cue-21
+00:01:26.620 --> 00:01:29.120
+Next, add the answer choices.
+
+cue-22
+00:01:30.050 --> 00:01:32.740
+These are the answer options your learners
+can select from.
+
+cue-23
+00:01:33.380 --> 00:01:35.840
+You can add as many choices as needed.
+
+cue-24
+00:01:36.580 --> 00:01:39.840
+Here, I will add three answer choices as
+an example.
+
+cue-25
+00:01:45.600 --> 00:01:50.640
+To add another answer choice, click Add
+Choice below the existing choices.
+
+cue-26
+00:01:56.200 --> 00:02:01.280
+To delete a particular answer choice,
+click the X's to the right of the answer
+
+cue-27
+00:02:01.280 --> 00:02:01.660
+choice.
+
+cue-28
+00:02:03.660 --> 00:02:07.260
+You have two options for the order in
+which students will see the answer
+
+cue-29
+00:02:07.260 --> 00:02:10.160
+choices. If answer choices are shuffled,
+
+cue-30
+00:02:10.880 --> 00:02:13.600
+students will see them in a randomly
+determined order.
+
+cue-31
+00:02:14.420 --> 00:02:16.180
+If answer choices are not shuffled,
+
+cue-32
+00:02:16.800 --> 00:02:19.600
+students will see them in the order they
+appear in authoring.
+
+cue-33
+00:02:20.460 --> 00:02:22.060
+To select your desired option,
+
+cue-34
+00:02:24.020 --> 00:02:28.060
+click the three dots menu on the far right
+above the question stem.
+
+cue-35
+00:02:29.620 --> 00:02:32.840
+Check or uncheck the Shuffle Answer
+Choices checkbox.
+
+cue-36
+00:02:38.340 --> 00:02:42.940
+To reorder the answer choices, click the
+drag handle to the left of an answer
+
+cue-37
+00:02:42.940 --> 00:02:46.140
+choice and drag it into the desired
+position.
+
+cue-38
+00:02:48.320 --> 00:02:50.980
+To set which answer choice will be marked
+as correct,
+
+cue-39
+00:02:51.580 --> 00:02:53.000
+go to the Answer Key tab.
+
+cue-40
+00:02:55.180 --> 00:02:58.140
+Simply select the radio button next to a
+correct answer.
